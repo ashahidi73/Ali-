@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marketing Team - فريق التسويق</title>
+
+    <!-- مكتبة Tailwind CSS للتصميم -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- مكتبات React و ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+
+    <!-- مكتبة Babel لتحويل كود React داخل المتصفح -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- خط Cairo -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap');
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: #ffcc4e;
+        }
+
+        /* أنميشن مخصص */
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(100px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-slide-up {
+            animation-name: slideUp;
+            animation-duration: 0.8s;
+            animation-fill-mode: forwards;
+        }
+
+        /* حركات التلاشي والدخول الجانبية */
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(100px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-100px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .animate-slide-in-right {
+            animation: slideInRight 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        .animate-slide-in-left {
+            animation: slideInLeft 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+    </style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel">
+    const {useState, useEffect} = React;
+
+    // --- تعريف الأيقونات يدوياً (لتعمل بدون استيراد خارجي) ---
+    const Icon = ({children, className, size = 24, ...props}) => (
+        <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} {...props}>
+            {children}
+        </svg>
+    );
+
+    const Menu = (props) => <Icon {...props}><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6"
+                                                                                        y2="6"/><line x1="4" x2="20"
+                                                                                                      y1="18" y2="18"/></Icon>;
+    const X = (props) => <Icon {...props}><path d="M18 6 6 18"/><path d="m6 6 12 12"/></Icon>;
+    const Search = (props) => <Icon {...props}><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></Icon>;
+    const Facebook = (props) => <Icon {...props}><path
+        d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></Icon>;
+    const Twitter = (props) => <Icon {...props}><path
+        d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"/></Icon>;
+    const Linkedin = (props) => <Icon {...props}><path
+        d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect
+        width="4" height="12" x="2" y="9"/><circle cx="4" cy="4" r="2"/></Icon>;
+    const Instagram = (props) => <Icon {...props}><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path
+        d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5"
+                                                                      y2="6.5"/></Icon>;
+    const Youtube = (props) => <Icon {...props}><path
+        d="M2.5 17a24.12 24.12 0 0 1 0-10 2 2 0 0 1 1.4-1.4 49.56 49.56 0 0 1 16.2 0A2 2 0 0 1 21.5 7a24.12 24.12 0 0 1 0 10 2 2 0 0 1-1.4 1.4 49.55 49.55 0 0 1-16.2 0A2 2 0 0 1 2.5 17"/><path
+        d="m10 15 5-3-5-3z"/></Icon>;
+    const Phone = (props) => <Icon {...props}><path
+        d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></Icon>;
+    const Layers = (props) => <Icon {...props}><path
+        d="m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z"/><path
+        d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65"/><path
+        d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65"/></Icon>;
+    const Star = (props) => <Icon {...props}><polygon
+        points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></Icon>;
+    const Shield = (props) => <Icon {...props}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/></Icon>;
+    const Gift = (props) => <Icon {...props}><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13"/><path
+        d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path
+        d="M7.5 8a2.5 2.5 0 0 1 0-5A4.8 8 0 0 1 12 8a4.8 8 0 0 1 4.5-5 2.5 2.5 0 0 1 0 5"/></Icon>;
+    const ArrowRight = (props) => <Icon {...props}><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></Icon>;
+    const Clock = (props) => <Icon {...props}><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></Icon>;
+
+    // --- مكونات الصفحة ---
+
+    const Navbar = () => {
+        const [isOpen, setIsOpen] = useState(false);
+
+        const navLinks = [
+            {name: 'الرئيسية', href: '#home'},
+            {name: 'العروض', href: '#offers'},
+            {name: 'الخدمات', href: '#services'},
+            {name: 'التغطية', href: '#coverage'},
+            {name: 'الفعاليات', href: '#events'},
+            {name: 'Brand Lab', href: '#brand-lab'},
+        ];
+
+        return (
+            <nav className="bg-black text-white w-full z-50 relative border-b border-gray-800">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div
+                        className="flex flex-col md:flex-row justify-between items-center h-auto md:h-24 py-4 md:py-0 gap-4 md:gap-0">
+
+                        {/* الجهة اليمنى: اسم الفريق */}
+                        <div className="flex-shrink-0 order-1 md:order-1">
+                            <span className="text-2xl font-black tracking-wider uppercase">
+                              MARKETING <span className="text-[#ffcc4e]">TEAM</span>
+                            </span>
+                        </div>
+
+                        {/* القائمة الرئيسية (وسط) */}
+                        <div
+                            className="hidden md:flex items-center space-x-6 space-x-reverse order-3 md:order-2 flex-grow justify-center">
+                            {navLinks.map((link) => (
+                                <a
+                                    key={link.name}
+                                    href={link.href}
+                                    className="text-sm font-bold hover:text-[#ffcc4e] transition-colors duration-300 uppercase px-2"
+                                >
+                                    {link.name}
+                                </a>
+                            ))}
+                        </div>
+
+                        {/* الجهة اليسرى: البحث والشعار */}
+                        <div
+                            className="flex items-center gap-4 order-2 md:order-3 w-full md:w-auto justify-between md:justify-end">
+                            {/* شريط البحث */}
+                            <div className="relative flex-grow md:flex-grow-0">
+                                <input
+                                    type="text"
+                                    placeholder="بحث..."
+                                    className="bg-white/10 border border-white/20 rounded-full px-4 py-1 text-sm text-white focus:outline-none focus:border-[#ffcc4e] w-full md:w-48 transition-all"
+                                />
+                                <Search className="absolute left-3 top-1.5 text-gray-400 w-4 h-4"/>
+                            </div>
+
+                            {/* شعار الشركة المربع */}
+                            <div
+                                className="w-12 h-12 bg-[#ffcc4e] flex items-center justify-center font-bold text-black border-2 border-white rounded-none shadow-[0_0_10px_rgba(255,255,255,0.2)]">
+                                LOGO
+                            </div>
+
+                            {/* زر القائمة للموبايل */}
+                            <button
+                                onClick={() => setIsOpen(!isOpen)}
+                                className="md:hidden p-2 text-white hover:text-[#ffcc4e]"
+                            >
+                                {isOpen ? <X size={24}/> : <Menu size={24}/>} 
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Mobile Menu Dropdown */}
+                {isOpen && (
+                    <div className="md:hidden bg-black border-t border-gray-800">
+                        <div className="px-2 pt-2 pb-3 space-y-1">
+                            {navLinks.map((link) => (
+                                <a
+                                    key={link.name}
+                                    href={link.href}
+                                    onClick={() => setIsOpen(false)}
+                                    className="block px-3 py-2 text-base font-medium text-white hover:bg-[#ffcc4e] hover:text-black transition-colors"
+                                >
+                                    {link.name}
+                                </a>
+                            ))}
+                        </div>
+                    </div>
+                )}
+            </nav>
+        );
+    };
+
+    const MasterBanner = () => {
+        const [currentSlide, setCurrentSlide] = useState(0);
+
+        const slides = [
+            {
+                id: 1,
+                title: "الاستراتيجيات التسويقية في YOU",
+                buttonText: "للاطلاع أكثر",
+                image: "https://imgbob.net/ib/QjLtodg7kZZuXJE_1766489130.png"
+            },
+            {
+                id: 2,
+                title: "القنوات التسويقية وخطة الانتشار",
+                buttonText: "للاطلاع على المزيد",
+                image: "https://images.unsplash.com/photo-1432888498266-38ffec3eaf0a?ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&q=80"
+            },
+            {
+                id: 3,
+                title: "عوامل نجاح الرسالة التسويقية",
+                buttonText: "المزيد",
+                image: "https://images.unsplash.com/photo-1552664730-d307ca884978?ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&q=80"
+            }
+        ];
+
+        useEffect(() => {
+            const timer = setInterval(() => {
+                setCurrentSlide((prev) => (prev + 1) % slides.length);
+            }, 5000);
+            return () => clearInterval(timer);
+        }, []);
+
+        return (
+            <div className="relative w-full h-[600px] overflow-hidden bg-black">
+                {slides.map((slide, index) => (
+                    <div
+                        key={slide.id}
+                        className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
+                            index === currentSlide ? 'opacity-100' : 'opacity-0'
+                        }`}
+                    >
+                        <div
+                            className={`absolute inset-0 bg-cover bg-center transition-transform duration-[10000ms] ease-linear ${
+                                index === currentSlide ? 'scale-110' : 'scale-100'
+                            }`}
+                            style={{backgroundImage: `url(${slide.image})`}}
+                        >
+                            <div className="absolute inset-0 bg-black/50"></div>
+                        </div>
+
+                        <div className="absolute inset-0 flex flex-col items-center justify-center space-y-8 z-10">
+                            <h2 className="text-4xl md:text-6xl font-bold text-white border-b-4 border-[#ffcc4e] pb-2 drop-shadow-lg text-center px-4">
+                                {slide.title}
+                            </h2>
+
+                            <a href="#"
+                               className="flex items-center gap-2 bg-[#ffcc4e] text-black px-8 py-3 rounded-full font-bold hover:bg-white transition-all duration-300 shadow-lg transform hover:-translate-y-1">
+                                <span>{slide.buttonText}</span>
+                                <ArrowRight size={20} className="rtl:rotate-180"/>
+                            </a>
+                        </div>
+                    </div>
+                ))}
+            </div>
+        );
+    };
+
+    const FloatingCards = () => {
+        const cards = [
+            {
+                title: "آخر العروض",
+                icon: Gift,
+                image: "https://images.unsplash.com/photo-1533750516457-a7f992034fec?auto=format&fit=crop&w=600&q=80"
+            },
+            {
+                title: "آخر الخدمات",
+                icon: Layers,
+                image: "https://images.unsplash.com/photo-1542744173-8e7e53415bb0?auto=format&fit=crop&w=600&q=80"
+            },
+            {
+                title: "أخبار التغطية",
+                icon: Shield,
+                image: "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=600&q=80"
+            },
+            {
+                title: "آخر الفعاليات",
+                icon: Star,
+                image: "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?auto=format&fit=crop&w=600&q=80"
+            }
+        ];
+
+        return (
+            <div className="relative -mt-32 z-20 pb-20 px-4">
+                <div className="max-w-7xl mx-auto">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        {cards.map((card, index) => (
+                            <div
+                                key={index}
+                                className="group relative h-80 rounded-[20px] overflow-hidden border-2 border-white shadow-2xl bg-gray-900 transform transition-all duration-700 hover:-translate-y-4 opacity-0 animate-slide-up"
+                                style={{animationDelay: `${index * 200}ms`}}
+                            >
+                                <div
+                                    className="absolute inset-0 transition-transform duration-700 ease-in-out group-hover:scale-125 bg-cover bg-center"
+                                    style={{backgroundImage: `url('${card.image}')`}}
+                                >
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+                                </div>
+
+                                <div className="absolute bottom-0 left-0 right-0 p-4">
+                                    <div
+                                        className="bg-white rounded-xl p-4 flex items-center justify-between shadow-lg relative z-10">
+                                        <div>
+                                            <h3 className="text-xl font-bold text-black">{card.title}</h3>
+                                            <span className="text-xs text-gray-500 font-bold">استكشف المزيد</span>
+                                        </div>
+                                        <div
+                                            className="w-10 h-10 bg-[#ffcc4e] rounded-full flex items-center justify-center text-black">
+                                            <card.icon size={20}/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
+    const ContentSection = () => {
+        const [isVisible, setIsVisible] = useState(false);
+        const domRef = React.useRef();
+
+        useEffect(() => {
+            const observer = new IntersectionObserver(entries => {
+                // تفعيل الحركة عند ظهور 20% من القسم في الشاشة
+                if (entries[0].isIntersecting) {
+                    setIsVisible(true);
+                    observer.disconnect(); // إيقاف المراقبة بعد أول ظهور لتجنب تكرار الحركة
+                }
+            }, {threshold: 0.2});
+
+            if (domRef.current) observer.observe(domRef.current);
+
+            return () => observer.disconnect();
+        }, []);
+
+        return (
+            <div ref={domRef}
+                 className="bg-white py-24 relative z-10 -mt-10 mb-16 shadow-sm border-t border-b border-gray-100 overflow-hidden">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="flex flex-col md:flex-row gap-12 md:gap-0">
+
+                        {/* المساحة الأولى: الدور الريادي للتسويق (دخول من اليمين) */}
+                        <div
+                            className={`flex-1 md:border-l-4 border-[#ffcc4e] md:pl-16 ${isVisible ? 'animate-slide-in-right' : 'opacity-0'}`}>
+                            <h2 className="text-3xl font-black text-black mb-6">الدور الريادي للتسويق</h2>
+                            <p className="text-gray-700 leading-relaxed text-lg text-justify">
+                                التسويق لم يعد مجرد أداة لترويج المنتجات أو الخدمات، بل أصبح المحرك الأساسي لنمو الأعمال وصناعة الفارق
+                                التنافسي. يكمن الدور الريادي للتسويق في قدرته على قراءة وتحليل اتجاهات السوق، وفهم احتياجات العملاء
+                                العميقة، وبناء استراتيجيات مبتكرة تستبق تطلعاتهم. من خلال بناء هوية مؤسسية قوية وتواصل فعال، يساهم
+                                التسويق في ترسيخ مكانة العلامة التجارية وخلق ولاء مستدام. إنه الجسر الذي يربط بين الرؤية الاستراتيجية
+                                للشركة وتجربة العميل اليومية، مما يضمن تحقيق الأهداف بفعالية وإبداع في عالم رقمي سريع التغير. نحن
+                                نؤمن بأن التسويق الناجح هو الذي يروي قصة العلامة التجارية بصدق، ويحول الجمهور المستهدف إلى شركاء
+                                حقيقيين في مسيرة النجاح.
+                            </p>
+                        </div>
+
+                        {/* المساحة الثانية: قوة الجمهور الداخلي (دخول من اليسار) */}
+                        <div className={`flex-1 md:pr-16 mt-12 md:mt-0 ${isVisible ? 'animate-slide-in-left' : 'opacity-0'}`}>
+                            <h2 className="text-3xl font-black text-black mb-6">قوة الجمهور الداخلي</h2>
+                            <p className="text-gray-700 leading-relaxed text-lg text-justify">
+                                يعتبر الموظفون هم السفراء الأوائل والأكثر مصداقية لأي علامة تجارية. إن قوة الجمهور الداخلي تتجاوز مجرد
+                                أداء المهام الوظيفية؛ فهم يمثلون النبض الحقيقي للشركة وصوتها الموثوق. عندما يؤمن الموظف برسالة
+                                المؤسسة وقيمها، يتحول تلقائياً إلى مسوق شغوف يساهم في نشر هذه الرسالة عبر شبكاته الشخصية والمهنية.
+                                هذا التبني الداخلي يخلق تأثيراً مضاعفاً، حيث يعزز من ثقة العملاء الخارجيين ويضفي طابعاً إنسانياً
+                                وأصيلاً على الهوية المؤسسية. الاستثمار في وعي ومشاركة الموظفين هو استثمار مباشر في توسيع نطاق التأثير
+                                التسويقي وتحقيق نجاح مستدام، فالموظف الذي يشعر بالانتماء هو أقوى أداة تسويقية يمكن لأي مؤسسة أن
+                                تمتلكها.
+                            </p>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
+    const NewsSection = () => {
+        const news = [
+            {
+                title: "باقة تلبي احتياجك تماماً",
+                subtitle: "باقة 6 جيجا مكس فورجي",
+                description: "احصل على:\n• 6 جيجا إنترنت 4G\n• 80 دقيقة ضمن الشبكة\n• 40 دقيقة لكل الشبكات\n• 120 رسالة نصية\n• صلاحية 30 يوماً\n• السعر: 3412 ريالاً (شامل الضريبة)",
+                image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=600&q=80"
+            },
+            {
+                title: "الرمز السحري بين يديك",
+                subtitle: "تعرف على أرصدتك وباقات",
+                description: "لا تدع الإنترنت ينقطع فجأة! بلمسة واحدة استخدم الرمز #144* لتظل دائماً في الصورة. استعلم مجاناً عن:\n• رصيدك المتبقي (دقائق، رسائل، وإنترنت).\n• تاريخ صلاحية باقاتك المفعلة.",
+                image: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=600&q=80"
+            },
+            {
+                title: "حَكّم في تطبيق YOU",
+                subtitle: "لأنه عالمك الرقمي",
+                description: "تحكم بعالمك الرقمي بسهولة:\n• إدارة وشراء الباقات المفضلة.\n• تسديد الفواتير ومتابعة الأرصدة.\n• الاشتراك وإلغاء الخدمات الإضافية والترفيهية.\n• تحويل الرصيد وإدارة أرقام المجموعة العائلية بكل مرونة.",
+                image: "https://images.unsplash.com/photo-1551836022-d5d88e9218df?auto=format&fit=crop&w=600&q=80"
+            },
+            {
+                title: "سوا پلس 250",
+                subtitle: "لكل الشبكات وبنفس التعرفة",
+                description: "باقة التوفير الشاملة لمشتركي صنعاء (1815 ريال شامل الضريبة):\n• 250 دقيقة لكل الشبكات + 250 دقيقة داخل الشبكة.\n• 300 رسالة لجميع الشبكات.\n• صلاحية 30 يوماً.\n• خدمة نغم مجاناً لشهر (للمشتركين الجدد).",
+                image: "https://images.unsplash.com/photo-1553877606-3c02d288098a?auto=format&fit=crop&w=600&q=80"
+            },
+            {
+                title: "طمنهم عليك",
+                subtitle: "بالرسائل القصيرة أثناء التجوال",
+                description: "لمشتركي الفوترة وبدون رسوم تأمين:\n• استقبال مجاني للرسائل حول العالم.\n• إرسال رسائل لأي وجهة من العالم: 100 ريال، ومن الإمارات: 150 ريال، وعبر التجوال البحري/الجوي: 230 ريال.\nللتفعيل زورونا بمراكز الخدمة.",
+                image: "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&w=600&q=80"
+            },
+            {
+                title: "بطولة YOU الأولى للبادل",
+                subtitle: "الرئيس التنفيذي يتسلم درعاً تكريمياً",
+                description: "اختتام مبهر لبطولة YOU الأولى المفتوحة للبادل بدعم حصري من الشركة.\nتوّج الثنائي فارس الوزير وعبدالله المروني باللقب.\nوتم تكريم الرئيس التنفيذي د. إبراهيم الشامي بدرع الاتحاد تقديراً لجهود YOU المستمرة في دعم الرياضة.",
+                image: "https://images.unsplash.com/photo-1622279457486-62dcc4a631d6?auto=format&fit=crop&w=600&q=80"
+            },
+        ];
+
+        return (
+            <div className="bg-[#ffcc4e] pb-20 pt-12">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        {news.map((item, index) => (
+                            <div
+                                key={index}
+                                className="bg-white rounded-[20px] border-2 border-white hover:border-white shadow-lg hover:shadow-2xl transition-all duration-300 p-6 flex flex-col h-full group"
+                            >
+                                <div className="h-48 rounded-xl mb-4 overflow-hidden relative shrink-0">
+                                    <img
+                                        src={item.image}
+                                        alt={item.title}
+                                        className="w-full h-full object-cover transition-transform duration-700 ease-in-out group-hover:scale-125"
+                                    />
+                                    <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors"></div>
+                                </div>
+                                <h3 className="text-xl font-bold text-black mb-1 group-hover:text-[#ffcc4e] transition-colors">{item.title}</h3>
+                                {item.subtitle && <h4 className="text-sm font-bold text-gray-500 mb-3">{item.subtitle}</h4>}
+                                <p className="text-gray-600 text-sm mb-6 leading-relaxed flex-grow text-justify whitespace-pre-line">{item.description}</p>
+                                <a href="#" className="mt-auto flex items-center gap-2 text-sm font-bold text-black hover:text-[#ffcc4e]">
+                                    اقرأ المزيد <ArrowRight size={16} className="rtl:rotate-180"/>
+                                </a>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
+    const Footer = () => {
+        const footerLinks = ['الرئيسية', 'العروض', 'الخدمات', 'التغطية', 'الفعاليات', 'Brand Lab'];
+
+        return (
+            <footer className="bg-black text-white py-12 border-t-4 border-[#ffcc4e]">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="flex flex-col md:flex-row justify-between items-center gap-8">
+
+                        {/* القائمة (يمين) */}
+                        <div className="flex flex-wrap justify-center md:justify-start gap-6 order-2 md:order-1 flex-1">
+                            {footerLinks.map((link, idx) => (
+                                <a key={idx} href="#" className="text-sm font-bold hover:text-[#ffcc4e] transition-colors uppercase">
+                                    {link}
+                                </a>
+                            ))}
+                        </div>
+
+                        {/* أيقونات التواصل (وسط) */}
+                        <div className="flex gap-4 order-3 md:order-2">
+                            <a href="#" className="w-10 h-10 border border-white rounded-full flex items-center justify-center hover:bg-[#ffcc4e] hover:text-black hover:border-[#ffcc4e] transition-all">
+                                <Facebook size={18}/>
+                            </a>
+                            <a href="#" className="w-10 h-10 border border-white rounded-full flex items-center justify-center hover:bg-[#ffcc4e] hover:text-black hover:border-[#ffcc4e] transition-all">
+                                <Instagram size={18}/>
+                            </a>
+                            <a href="#" className="w-10 h-10 border border-white rounded-full flex items-center justify-center hover:bg-[#ffcc4e] hover:text-black hover:border-[#ffcc4e] transition-all">
+                                <Twitter size={18}/>
+                            </a>
+                            <a href="#" className="w-10 h-10 border border-white rounded-full flex items-center justify-center hover:bg-[#ffcc4e] hover:text-black hover:border-[#ffcc4e] transition-all">
+                                <Youtube size={18}/>
+                            </a>
+                            <a href="#" className="w-10 h-10 border border-white rounded-full flex items-center justify-center hover:bg-[#ffcc4e] hover:text-black hover:border-[#ffcc4e] transition-all">
+                                <Phone size={18}/>
+                            </a>
+                        </div>
+
+                        {/* الشعار (يسار) */}
+                        <div className="flex justify-center md:justify-end order-1 md:order-3 flex-1">
+                            <div className="w-16 h-16 bg-[#ffcc4e] flex items-center justify-center font-bold text-black border-2 border-white text-xl shadow-[0_0_15px_rgba(255,204,78,0.3)]">
+                                LOGO
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div className="text-gray-500 text-sm text-center mt-12 pt-8 border-t border-gray-800">
+                        © {new Date().getFullYear()} MARKETING TEAM. جميع الحقوق محفوظة.
+                    </div>
+                </div>
+            </footer>
+        );
+    };
+
+    const App = () => {
+        return (
+            <div className="min-h-screen" dir="rtl">
+                <Navbar/>
+                <MasterBanner/>
+                <FloatingCards/>
+                <ContentSection/>
+                <NewsSection/>
+                <Footer/>
+            </div>
+        );
+    };
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App/>);
+</script>
+</body>
+</html>
